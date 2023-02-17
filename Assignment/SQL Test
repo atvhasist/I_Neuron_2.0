@@ -1,0 +1,104 @@
+use database AT_DEMO_DATABASE
+
+create or replace table AT_sales_data_1
+(order_id varchar(100) PRIMARY KEY,
+ order_date string,
+ ship_date string,
+ ship_mode varchar(100),
+ customer_name varchar(100),
+ segment varchar(100),
+ state varchar(100),
+ country varchar(100),
+ market varchar(100),
+ region varchar(100),
+ product_id varchar(100),
+ category varchar(100),
+ sub_category varchar(100),
+ product_name string,
+ sales int,
+ quantity int,
+ discount int,
+ profit int,
+ shipping_cost int, 
+ order_priority varchar(100),
+ year varchar(20));
+
+select * from AT_sales_data_1
+describe table AT_sales_data_1
+---------------------------------------
+3. Check the data type for Order date and Ship date and mention in what data type it should be?
+
+select ORDER_DATE,
+to_date(ORDER_DATE) as new_order
+FROM AT_sales_data_1;
+
+select SHIP_DATE,
+to_date(SHIP_DATE) as new_ship
+FROM AT_sales_data_1;
+
+select datediff('day',to_date(ORDER_DATE),to_date(SHIP_DATE)) as date_diff
+FROM AT_sales_data_1;
+
+-----------------------------------------
+4. Create a new column called order_extract and extract the number after the last ‘–‘from Order ID column.
+
+----SELECT ORDER_ID FROM AT_sales_data_1
+----where ORDER_ID LIKE '%-%' 
+
+select ORDER_ID, split_part(ORDER_ID, '-', 3) As order_extract
+FROM AT_sales_data_1;
+
+Alter table AT_sales_data_1 
+add column order_extract varchar;
+
+update AT_sales_data_1 
+set order_extract = split_part(ORDER_ID, '-', 3);
+
+Select ORDER_ID,order_extract from AT_sales_data_1 ; 
+
+----------------------------------------------------------
+5. Create a new column called Discount Flag and categorize it based on discount. Use ‘Yes’ if the discount is greater than zero else ‘No’.
+
+select * from AT_sales_data_1 
+
+Alter table AT_sales_data_1 
+add column Discount_Flag varchar;
+
+update AT_sales_data_1 
+set Discount_Flag =
+CASE
+when DISCOUNT >0 then 'Yes'
+else 'No'
+end ;
+
+select discount, Discount_Flag from AT_sales_data_1;
+
+----------------------------------------------------
+6. Create a new column called process days and calculate how many days it takes for each order id to process from the order to its shipment.
+
+Alter table AT_sales_data_1 
+add column process_days int;
+
+update AT_sales_data_1 
+set process_days = datediff('day',to_date(ORDER_DATE),to_date(SHIP_DATE))
+
+select ORDER_DATE,SHIP_DATE,process_days, * from AT_sales_data_1
+
+-----------------------------------------------------
+7. Create a new column called Rating and then based on the Process dates give rating
+
+Alter table AT_sales_data_1 
+add column Rating int;
+
+update AT_sales_data_1 
+set Rating =
+CASE
+when process_days <=3 then 5
+when process_days between 4 and 6  then 4
+when process_days between 7 and 10 then 3
+else 2
+end;
+
+select process_days, rating from AT_sales_data_1 ;
+
+-----------------------------------------------------
